@@ -38,6 +38,108 @@ document.addEventListener('DOMContentLoaded', () => {
             if (detailEl) detailEl.textContent = '这里是个人简介的详细内容区域。';
         });
 
+    // ========== 从 txt 文件加载博客列表 ==========
+    fetch('data/blogs.txt')
+        .then(response => {
+            if (!response.ok) throw new Error('无法加载 blogs.txt');
+            return response.text();
+        })
+        .then(text => {
+            const blogListEl = document.getElementById('blogList');
+            if (!blogListEl) return;
+
+            // 解析每一行：日期 | 标题 | 状态
+            const lines = text.trim().split('\n').filter(line => line.trim() !== '');
+            const blogs = [];
+
+            lines.forEach(line => {
+                const parts = line.split('|').map(s => s.trim());
+                if (parts.length >= 3) {
+                    blogs.push({
+                        date: parts[0],       // YYYY-MM-DD
+                        title: parts[1],
+                        status: parts[2]      // 编写中 / 已完成 / 已下线
+                    });
+                }
+            });
+
+            if (blogs.length === 0) {
+                blogListEl.innerHTML = `
+                    <div class="placeholder-content">
+                        <i class="fas fa-graduation-cap placeholder-icon"></i>
+                        <p>暂无博客，敬请期待...</p>
+                    </div>`;
+                return;
+            }
+
+            // 按月份分组：key = YYYY-MM
+            const groups = {};
+            blogs.forEach(blog => {
+                const month = blog.date.substring(0, 7); // YYYY-MM
+                if (!groups[month]) groups[month] = [];
+                groups[month].push(blog);
+            });
+
+            // 月份组按时间倒序（越晚越靠前）
+            const sortedMonths = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+            // 状态 → CSS 类名映射
+            const statusClassMap = {
+                '编写中': 'status-writing',
+                '已完成': 'status-completed',
+                '已下线': 'status-offline'
+            };
+
+            let html = '';
+            sortedMonths.forEach(month => {
+                // 组内按日期升序（越早序号越小）
+                const monthBlogs = groups[month].sort((a, b) => a.date.localeCompare(b.date));
+
+                html += `<div class="blog-month-group">`;
+                html += `<h3 class="blog-month-title">${month}</h3>`;
+
+                monthBlogs.forEach((blog, index) => {
+                    const num = index + 1;
+                    const dateForLink = blog.date; // YYYY-MM-DD
+                    const statusClass = statusClassMap[blog.status] || 'status-writing';
+
+                    html += `
+                        <div class="blog-item">
+                            <div class="blog-item-left">
+                                <span class="blog-number">${num}.</span>
+                                <a href="blogs/${dateForLink}.html" class="blog-title">${escapeHtml(blog.title)}</a>
+                            </div>
+                            <div class="blog-item-right">
+                                <span class="blog-date">${blog.date}</span>
+                                <span class="blog-status ${statusClass}">${escapeHtml(blog.status)}</span>
+                            </div>
+                        </div>`;
+                });
+
+                html += `</div>`;
+            });
+
+            blogListEl.innerHTML = html;
+        })
+        .catch(err => {
+            console.warn('博客列表加载失败：', err);
+            const blogListEl = document.getElementById('blogList');
+            if (blogListEl) {
+                blogListEl.innerHTML = `
+                    <div class="placeholder-content">
+                        <i class="fas fa-graduation-cap placeholder-icon"></i>
+                        <p>博客列表加载失败，请稍后重试...</p>
+                    </div>`;
+            }
+        });
+
+    // 简单的 HTML 转义，防止 XSS
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
     // ========== 主题切换（日间 / 夜间） ==========
     const themeToggle = document.getElementById('themeToggle');
     const html = document.documentElement;

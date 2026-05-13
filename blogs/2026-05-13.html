@@ -5,47 +5,110 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Walk on Sphere方法的重要性采样 - Marconi 的博客</title>
     <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/blog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .blog-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px 100px;
+        }
+        .blog-page-header {
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .blog-page-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .blog-page-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.9rem;
+            color: var(--color-text-dim);
+        }
+        .blog-page-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 32px;
+            font-size: 0.9rem;
+            color: var(--color-text-muted);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+        .blog-page-back:hover {
+            color: var(--color-primary);
+        }
+        .blog-page-placeholder {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--color-text-muted);
+            background: var(--color-placeholder-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+        }
+        .blog-page-placeholder i {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+            opacity: 0.35;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- 顶部导航 -->
-    <nav class="blog-nav">
-        <a href="../index.html" class="blog-back-btn" title="返回主页">
-            <i class="fas fa-arrow-left"></i>
-            <span>返回主页</span>
+    <div class="blog-page">
+        <a href="../index.html" class="blog-page-back">
+            <i class="fas fa-arrow-left"></i> 返回主页
         </a>
-    </nav>
 
-    <!-- 博客内容 -->
-    <article class="blog-article">
-        <header class="blog-header">
-            <h1 class="blog-title">Walk on Sphere方法的重要性采样</h1>
-            <div class="blog-meta">
-                <span class="blog-date"><i class="far fa-calendar-alt"></i> 2026年5月13日</span>
+        <div class="blog-page-header">
+            <h1>Walk on Sphere方法的重要性采样</h1>
+            <div class="blog-page-meta">
+                <span><i class="far fa-calendar-alt"></i> 2026-05-13</span>
                 <span class="blog-status status-writing">编写中</span>
             </div>
-        </header>
-
-        <div class="blog-body">
-            <!-- 博客正文内容将在此处编写 -->
-            <p class="blog-empty">内容编写中，敬请期待...</p>
         </div>
-    </article>
 
-    <!-- 页脚 -->
-    <footer class="site-footer">
-        <div class="container">
-            <p class="footer-copy">&copy; 2026 Marconi. All rights reserved.</p>
+        <div class="blog-page-placeholder">
+            <i class="fas fa-pen-fancy"></i>
+            <p>本文正在编写中，敬请期待...</p>
         </div>
-    </footer>
+    </div>
 
     <!-- 主题切换按钮 -->
     <button class="theme-toggle" id="themeToggle" aria-label="切换日间/夜间模式" title="切换日间/夜间模式">
         <i class="fas fa-sun"></i>
     </button>
 
-    <script src="../js/blog.js"></script>
+    <script>
+        // 主题同步
+        const STORAGE_KEY = 'marconi-theme';
+        const savedTheme = localStorage.getItem(STORAGE_KEY);
+        if (savedTheme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            const icon = themeToggle.querySelector('i');
+            if (savedTheme === 'light' && icon) {
+                icon.className = 'fas fa-moon';
+            }
+            themeToggle.addEventListener('click', () => {
+                const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+                if (isLight) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem(STORAGE_KEY, 'dark');
+                    if (icon) icon.className = 'fas fa-sun';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem(STORAGE_KEY, 'light');
+                    if (icon) icon.className = 'fas fa-moon';
+                }
+            });
+        }
+    </script>
 </body>
 </html>
