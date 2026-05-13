@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marconi 的个人主页</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <!-- ========== Hero 首屏 ========== -->
+    <section class="hero" id="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">欢迎来到Marconi的主页</h1>
+            <p class="hero-hint">
+                请向下滚动
+                <span class="scroll-arrow"><i class="fas fa-chevron-down"></i></span>
+            </p>
+        </div>
+    </section>
+
+    <!-- ========== 标签页区域 ========== -->
+    <section class="tabs-section" id="content">
+        <div class="container">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="profile">个人简介</button>
+                <button class="tab-btn" data-tab="education">学习经历</button>
+                <button class="tab-btn" data-tab="research">科研实习</button>
+                <button class="tab-btn" data-tab="life">生活娱乐</button>
+            </div>
+            <div class="tab-content-wrapper">
+                <!-- 个人简介 -->
+                <div class="tab-pane active" id="profile">
+                    <div class="profile-card">
+                        <div class="profile-avatar">
+                            <img src="images/avatar.jpg" alt="头像">
+                        </div>
+                        <div class="profile-info">
+                            <h2>马明昊</h2>
+                            <p class="profile-bio" id="profileBio"></p>
+                            <p class="profile-detail" id="profileDetail"></p>
+                            <div class="profile-tags">
+                                <span class="tag">CG</span>
+                                <span class="tag">摄影</span>
+                                <span class="tag">骑行</span>
+                                <span class="tag">音游</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 学习经历 -->
+                <div class="tab-pane" id="education">
+                    <div class="placeholder-content">
+                        <i class="fas fa-graduation-cap placeholder-icon"></i>
+                        <p>学习经历内容即将更新，敬请期待...</p>
+                    </div>
+                </div>
+                <!-- 科研实习 -->
+                <div class="tab-pane" id="research">
+                    <div class="placeholder-content">
+                        <i class="fas fa-flask placeholder-icon"></i>
+                        <p>科研实习内容即将更新，敬请期待...</p>
+                    </div>
+                </div>
+                <!-- 生活娱乐 -->
+                <div class="tab-pane" id="life">
+                    <div class="placeholder-content">
+                        <i class="fas fa-gamepad placeholder-icon"></i>
+                        <p>生活娱乐内容即将更新，敬请期待...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 页脚 - 社交媒体 ========== -->
+    <footer class="site-footer">
+        <div class="container">
+            <h3 class="footer-title">在其他地方找到我</h3>
+            <div class="social-links">
+                <a href="https://space.bilibili.com/453993985" target="_blank" rel="noopener" class="social-link bilibili">
+                    <i class="fab fa-bilibili"></i>
+                    <span>Bilibili</span>
+                </a>
+                <a href="https://www.xiaohongshu.com/user/profile/616ede5e0000000002023e08" target="_blank" rel="noopener" class="social-link xiaohongshu">
+                    <i class="fas fa-book-open"></i>
+                    <span>小红书</span>
+                </a>
+                <a href="https://www.zhihu.com/people/hao-zi-marconi" target="_blank" rel="noopener" class="social-link zhihu">
+                    <i class="fab fa-zhihu"></i>
+                    <span>知乎</span>
+                </a>
+                <a href="https://github.com/marconik" target="_blank" rel="noopener" class="social-link github">
+                    <i class="fab fa-github"></i>
+                    <span>GitHub</span>
+                </a>
+            </div>
+            <p class="footer-copy">&copy; 2026 Marconi. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- 主题切换按钮 -->
+    <button class="theme-toggle" id="themeToggle" aria-label="切换日间/夜间模式" title="切换日间/夜间模式">
+        <i class="fas fa-sun"></i>
+    </button>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
