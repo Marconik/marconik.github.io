@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
     // ========== 从 txt 文件加载个人简介 ==========
-    fetch('data/profile.txt')
+    fetch('data/profile.txt', { cache: 'no-store' })
         .then(response => {
             if (!response.ok) throw new Error('无法加载 profile.txt');
             return response.text();
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // ========== 从 txt 文件加载博客列表 ==========
-    fetch('data/blogs.txt')
+    fetch('data/blogs.txt', { cache: 'no-store' })
         .then(response => {
             if (!response.ok) throw new Error('无法加载 blogs.txt');
             return response.text();
