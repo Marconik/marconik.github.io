@@ -119,21 +119,27 @@ body::before{
     overflow:hidden;
     text-overflow:ellipsis;
     margin:0 16px;
-    cursor:default;
+    padding:8px 12px;
+    max-width:100%;
+    border:0;
+    border-radius:4px;
+    background:transparent;
+    font-family:inherit;
+    cursor:pointer;
 }
 /* 目录下拉 */
 .toc-wrapper{
-    position:relative;
+    position:static;
     display:flex;
     align-items:center;
     justify-content:center;
     flex:1;
     min-width:0;
+    margin:0 12px;
     align-self:stretch;
 }
 .toc-wrapper .topbar-title{margin:0;}
 .toc-dropdown{
-    display:none;
     position:absolute;
     top:100%;
     left:50%;
@@ -145,20 +151,24 @@ body::before{
     border-radius:0 0 12px 12px;
     border-top:none;
     padding:10px 0;
-    min-width:320px;
+    width:min(480px,calc(100% - 24px));
     max-height:70vh;
     overflow-y:auto;
     box-shadow:0 12px 40px rgba(0,0,0,.15);
     z-index:200;
 }
-.toc-wrapper:hover .toc-dropdown{display:block;}
+.topbar-title:focus-visible,.toc-dropdown a:focus-visible{
+    outline:2px solid var(--color-primary);
+    outline-offset:-2px;
+}
 .toc-dropdown a{
     display:block;
     padding:8px 24px;
     font-size:.88rem;
     color:var(--color-text-muted);
     text-decoration:none;
-    white-space:nowrap;
+    white-space:normal;
+    overflow-wrap:anywhere;
     transition:all .18s;
 }
 .toc-dropdown a:hover{
@@ -203,6 +213,7 @@ body::before{
     letter-spacing:.02em;
 }
 .blog-content h3{
+    scroll-margin-top:68px;
     font-size:1.4rem;
     font-weight:700;
     color:var(--color-heading);
@@ -212,6 +223,7 @@ body::before{
     line-height:1.5;
 }
 .blog-content h4{
+    scroll-margin-top:68px;
     font-size:1.12rem;
     font-weight:600;
     color:var(--color-text);
@@ -293,6 +305,7 @@ body::before{
 .blog-content .md-alert-note p{color:var(--color-text-muted);}
 .blog-content .md-alert strong{color:var(--color-accent);}
 /* 行内代码 - 原生 Markdown 风格，无语法高亮 */
+.blog-content pre{overflow-x:auto;}
 .blog-content code{
     font-family:var(--font-mono);
     font-size:.88em;
@@ -376,7 +389,6 @@ body::before{
     .blog-footer{padding:40px 18px 28px;}
     .blog-topbar .theme-toggle{width:32px;height:32px;font-size:.9rem;}
     .blog-topbar .topbar-title{font-size:.85rem;}
-    .toc-dropdown{min-width:260px;left:20px;transform:none;}
 }
 </style>
 </head>
@@ -386,8 +398,8 @@ body::before{
 <header class="blog-topbar">
     <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回主页</a>
     <div class="toc-wrapper">
-        <span class="topbar-title">Walk on Sphere方法的重要性采样优化 ▾</span>
-        <nav class="toc-dropdown">
+        <button type="button" class="topbar-title" id="tocToggle" aria-expanded="false" aria-controls="blogToc">Walk on Sphere方法的重要性采样优化 ▾</button>
+        <nav class="toc-dropdown" id="blogToc" aria-label="文章目录" hidden>
             <a href="#1-introduction" class="toc-h3">1. Introduction</a>
             <a href="#11monte-carlo方法的基本数学原理" class="toc-h4">1.1 Monte Carlo方法的基本数学原理</a>
             <a href="#12-walk-on-sphere和walk-on-star方法" class="toc-h4">1.2 Walk on Sphere和Walk on Star方法</a>
@@ -714,6 +726,39 @@ body::before{
 </footer>
 
 <script>
+(function(){
+    var wrapper=document.querySelector('.toc-wrapper');
+    var toggle=document.getElementById('tocToggle');
+    var toc=document.getElementById('blogToc');
+    function setOpen(open){
+        toc.hidden=!open;
+        toggle.setAttribute('aria-expanded',String(open));
+    }
+    toggle.addEventListener('click',function(){setOpen(toc.hidden);});
+    wrapper.addEventListener('keydown',function(event){
+        if(event.key==='Escape'&&!toc.hidden){
+            event.preventDefault();
+            setOpen(false);
+            toggle.focus();
+        }
+    });
+    wrapper.addEventListener('focusout',function(event){
+        if(!wrapper.contains(event.relatedTarget)) setOpen(false);
+    });
+    document.addEventListener('click',function(event){
+        if(!wrapper.contains(event.target)) setOpen(false);
+    });
+    toc.addEventListener('click',function(event){
+        var link=event.target.closest('a');
+        if(!link) return;
+        setOpen(false);
+        var heading=document.getElementById(decodeURIComponent(link.hash.slice(1)));
+        if(heading){
+            heading.setAttribute('tabindex','-1');
+            heading.focus({preventScroll:true});
+        }
+    });
+})();
 (function(){
     var html=document.documentElement;
     var btn=document.getElementById('themeToggle');

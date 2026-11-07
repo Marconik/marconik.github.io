@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>WildScene - 鸟类识别Agent</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+    --color-bg: #0f0f0f;
+    --color-text: #d4d4d8;
+    --color-text-muted: #a1a1aa;
+    --color-text-dim: #71717a;
+    --color-footer-bg: #0a0a14;
+    --color-footer-copy: #555;
+    --color-border: rgba(255,255,255,0.07);
+    --color-social-border: rgba(255,255,255,0.1);
+    --color-social-hover-border: rgba(255,255,255,0.25);
+    --color-primary: #0ea5e9;
+    --color-accent: #22d3ee;
+    --color-code-bg: rgba(255,255,255,0.05);
+    --color-topbar-bg: rgba(15,15,15,.88);
+    --color-content-bg: rgba(12,12,18,.86);
+    --color-footer-bg-rgba: rgba(10,10,20,.82);
+    --color-toc-bg: rgba(20,20,30,.96);
+    --color-toc-border: rgba(255,255,255,.1);
+    --color-math-bg: rgba(255,255,255,.025);
+    --color-math-border: rgba(255,255,255,.05);
+    --color-alert-bg: rgba(14,165,233,.07);
+    --color-alert-border: rgba(14,165,233,.18);
+    --color-bq-bg: rgba(14,165,233,.06);
+    --color-heading: #e4e4e7;
+    --color-h2: #fff;
+    --color-strong: #f0f0f0;
+    --color-toc-h3: #e4e4e7;
+    --color-toc-hover-bg: rgba(255,255,255,.06);
+    --color-toc-divider: rgba(255,255,255,.06);
+    --font-sans: "PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;
+    --font-mono: "SF Mono","Cascadia Code","Fira Code","JetBrains Mono",Consolas,monospace;
+}
+[data-theme="light"] {
+    --color-text: #27272a;
+    --color-text-muted: #52525b;
+    --color-text-dim: #a1a1aa;
+    --color-border: rgba(0,0,0,0.08);
+    --color-social-border: rgba(0,0,0,0.1);
+    --color-social-hover-border: rgba(0,0,0,0.2);
+    --color-primary: #0284c7;
+    --color-accent: #0891b2;
+    --color-code-bg: rgba(0,0,0,0.05);
+    --color-topbar-bg: rgba(255,255,255,.88);
+    --color-content-bg: rgba(255,255,255,.88);
+    --color-footer-bg-rgba: rgba(245,245,247,.88);
+    --color-footer-copy: #a1a1aa;
+    --color-toc-bg: rgba(255,255,255,.96);
+    --color-toc-border: rgba(0,0,0,.1);
+    --color-math-bg: rgba(0,0,0,.02);
+    --color-math-border: rgba(0,0,0,.06);
+    --color-alert-bg: rgba(2,132,199,.06);
+    --color-alert-border: rgba(2,132,199,.15);
+    --color-bq-bg: rgba(2,132,199,.05);
+    --color-heading: #18181b;
+    --color-h2: #18181b;
+    --color-strong: #18181b;
+    --color-toc-h3: #18181b;
+    --color-toc-hover-bg: rgba(0,0,0,.04);
+    --color-toc-divider: rgba(0,0,0,.06);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+    font-family:var(--font-sans);
+    background:transparent;
+    color:var(--color-text);
+    line-height:1.9;
+    -webkit-font-smoothing:antialiased;
+}
+/* 固定背景 - 全屏铺满 */
+body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:url('../images/2026-11-5.JPG') center/cover no-repeat;
+    background-attachment:fixed;
+}
+/* 固定顶栏 */
+.blog-topbar{
+    position:fixed;
+    top:0;left:0;right:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    height:52px;
+    padding:0 24px;
+    background:var(--color-topbar-bg);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--color-border);
+}
+.blog-topbar .back-btn{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:var(--color-text-muted);
+    text-decoration:none;
+    font-size:.9rem;
+    font-weight:500;
+    transition:color .25s;
+    flex-shrink:0;
+}
+.blog-topbar .back-btn:hover{color:var(--color-primary);}
+.blog-topbar .topbar-title{
+    font-size:1rem;
+    font-weight:600;
+    color:var(--color-text);
+    text-align:center;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    margin:0 16px;
+    padding:8px 12px;
+    max-width:100%;
+    border:0;
+    border-radius:4px;
+    background:transparent;
+    font-family:inherit;
+    cursor:pointer;
+}
+/* 目录下拉 */
+.toc-wrapper{
+    position:static;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:1;
+    min-width:0;
+    margin:0 12px;
+    align-self:stretch;
+}
+.toc-wrapper .topbar-title{margin:0;}
+.toc-dropdown{
+    position:absolute;
+    top:100%;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--color-toc-bg);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--color-toc-border);
+    border-radius:0 0 12px 12px;
+    border-top:none;
+    padding:10px 0;
+    width:min(480px,calc(100% - 24px));
+    max-height:70vh;
+    overflow-y:auto;
+    box-shadow:0 12px 40px rgba(0,0,0,.15);
+    z-index:200;
+}
+.topbar-title:focus-visible,.toc-dropdown a:focus-visible{
+    outline:2px solid var(--color-primary);
+    outline-offset:-2px;
+}
+.toc-dropdown a{
+    display:block;
+    padding:8px 24px;
+    font-size:.88rem;
+    color:var(--color-text-muted);
+    text-decoration:none;
+    white-space:normal;
+    overflow-wrap:anywhere;
+    transition:all .18s;
+}
+.toc-dropdown a:hover{
+    color:var(--color-text);
+    background:var(--color-toc-hover-bg);
+}
+.toc-dropdown .toc-h3{
+    font-weight:700;
+    font-size:.92rem;
+    color:var(--color-toc-h3);
+    padding-top:10px;
+}
+.toc-dropdown .toc-h3:first-child{padding-top:4px;}
+.toc-dropdown .toc-h4{
+    padding-left:40px;
+    font-size:.84rem;
+}
+.toc-dropdown .toc-divider{
+    height:1px;
+    margin:4px 16px;
+    background:var(--color-toc-divider);
+}
+/* ========== 内容区 ========== */
+.blog-content{
+    max-width:70%;
+    margin:0 auto;
+    padding:80px 56px 70px;
+    background:var(--color-content-bg);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    font-size:1.02rem;
+    color:var(--color-text);
+}
+/* 标题层级 */
+.blog-content h2{
+    font-size:2rem;
+    font-weight:800;
+    color:var(--color-h2);
+    margin:0 0 10px;
+    padding-bottom:14px;
+    border-bottom:2px solid var(--color-primary);
+    letter-spacing:.02em;
+}
+.blog-content h3{
+    scroll-margin-top:68px;
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--color-heading);
+    margin:48px 0 16px;
+    padding-left:16px;
+    border-left:4px solid var(--color-primary);
+    line-height:1.5;
+}
+.blog-content h4{
+    scroll-margin-top:68px;
+    font-size:1.12rem;
+    font-weight:600;
+    color:var(--color-text);
+    margin:32px 0 10px;
+}
+.blog-content h4::before{
+    content:'▸ ';
+    color:var(--color-primary);
+    font-size:.9rem;
+}
+/* 段落 */
+.blog-content p{
+    margin:16px 0;
+    font-size:1.02rem;
+    line-height:1.95;
+}
+.blog-content strong{
+    color:var(--color-strong);
+    font-weight:700;
+}
+/* 链接 */
+.blog-content a{
+    color:var(--color-accent);
+    text-decoration:none;
+    border-bottom:1px solid transparent;
+    transition:border-color .2s;
+}
+.blog-content a:hover{border-bottom-color:var(--color-accent);}
+/* 摘要引言块 */
+.blog-content blockquote{
+    border-left:4px solid var(--color-primary);
+    margin:24px 0;
+    padding:16px 22px;
+    background:var(--color-bq-bg);
+    border-radius:0 10px 10px 0;
+    color:var(--color-text-muted);
+    font-size:.96rem;
+}
+.blog-content blockquote p{margin:8px 0;}
+.blog-content blockquote strong{
+    color:var(--color-accent);
+}
+/* 分隔线 */
+.blog-content hr{
+    border:none;
+    height:1px;
+    background:linear-gradient(90deg,transparent,var(--color-border),transparent);
+    margin:40px 0;
+}
+/* 列表 */
+.blog-content ul,.blog-content ol{margin:14px 0;padding-left:28px;}
+.blog-content li{margin:8px 0;line-height:1.8;}
+.blog-content li::marker{color:var(--color-primary);}
+/* 图片 */
+.blog-content img{
+    max-width:100%;
+    border-radius:12px;
+    margin:20px 0;
+    box-shadow:0 4px 24px rgba(0,0,0,.4);
+}
+/* 数学公式块 */
+.blog-content .mathjax-block{
+    margin:24px 0;
+    padding:20px 24px;
+    overflow-x:auto;
+    background:var(--color-math-bg);
+    border-radius:12px;
+    border:1px solid var(--color-math-border);
+}
+/* 提示框 */
+.blog-content .md-alert{
+    border-radius:12px;
+    padding:18px 24px;
+    margin:24px 0;
+    background:var(--color-alert-bg);
+    border:1px solid var(--color-alert-border);
+    font-size:.95rem;
+}
+.blog-content .md-alert-note p{color:var(--color-text-muted);}
+.blog-content .md-alert strong{color:var(--color-accent);}
+/* 行内代码 - 原生 Markdown 风格，无语法高亮 */
+.blog-content pre{overflow-x:auto;}
+.blog-content code{
+    font-family:var(--font-mono);
+    font-size:.88em;
+    padding:2px 7px;
+    background:var(--color-code-bg);
+    border-radius:4px;
+    color:var(--color-text);
+}
+/* 页脚 - 全宽，浮于背景之上 */
+.blog-footer{
+    padding:50px 48px 36px;
+    text-align:center;
+    background:var(--color-footer-bg-rgba);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    border-top:1px solid var(--color-border);
+}
+.blog-footer .footer-title{
+    font-size:1.1rem;
+    font-weight:600;
+    margin-bottom:24px;
+    color:var(--color-text-muted);
+    letter-spacing:.04em;
+}
+.blog-footer .social-links{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-bottom:30px;
+}
+.blog-footer .social-link{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 22px;
+    font-size:.9rem;
+    font-weight:500;
+    color:var(--color-text-muted);
+    text-decoration:none;
+    border-radius:50px;
+    border:1px solid var(--color-social-border);
+    transition:all .25s;
+}
+.blog-footer .social-link:hover{
+    color:var(--color-text);
+    border-color:var(--color-social-hover-border);
+}
+.blog-footer .footer-copy{
+    font-size:.8rem;
+    color:var(--color-footer-copy);
+}
+/* 主题切换按钮 */
+.theme-toggle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    border:1px solid var(--color-border);
+    background:transparent;
+    color:var(--color-text-muted);
+    cursor:pointer;
+    font-size:1rem;
+    transition:all .25s;
+    flex-shrink:0;
+}
+.theme-toggle:hover{
+    color:var(--color-primary);
+    border-color:var(--color-primary);
+}
+[data-theme="dark"] .theme-toggle .fa-moon{display:none;}
+[data-theme="dark"] .theme-toggle .fa-sun{display:inline-block;}
+[data-theme="light"] .theme-toggle .fa-sun{display:none;}
+[data-theme="light"] .theme-toggle .fa-moon{display:inline-block;}
+@media(max-width:768px){
+    .blog-content{max-width:94%;padding:72px 20px 44px;font-size:.96rem;}
+    .blog-content h2{font-size:1.5rem;}
+    .blog-content h3{font-size:1.2rem;}
+    .blog-footer{padding:40px 18px 28px;}
+    .blog-topbar .theme-toggle{width:32px;height:32px;font-size:.9rem;}
+    .blog-topbar .topbar-title{font-size:.85rem;}
+}
+.blog-status{
+    padding:2px 12px;
+    border:1px solid rgba(255,193,7,.25);
+    border-radius:50px;
+    background:rgba(255,193,7,.12);
+    color:#ffc107;
+    font-size:.78rem;
+}
+/* 文章图片、徽章与命令块 */
+.blog-content p,.blog-content li{overflow-wrap:anywhere;}
+.blog-content .article-image{display:block;height:auto;margin:24px auto;}
+.blog-content .article-badges{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;}
+.blog-content .article-badges a{border:0;}
+.blog-content .article-badges img{margin:0;vertical-align:middle;border-radius:0;box-shadow:none;}
+.blog-content pre{padding:16px 20px;border:1px solid var(--color-border);border-radius:10px;background:var(--color-code-bg);line-height:1.7;}
+.blog-content pre code{display:block;padding:0;background:none;white-space:pre;overflow-wrap:normal;}
+</style>
+</head>
+<body>
+<header class="blog-topbar">
+    <a href="../index.html" class="back-btn"><i class="fas fa-arrow-left"></i> 返回主页</a>
+    <div class="toc-wrapper">
+        <button type="button" class="topbar-title" id="tocToggle" aria-expanded="false" aria-controls="blogToc">WildScene - 鸟类识别Agent ▾</button>
+        <nav class="toc-dropdown" id="blogToc" aria-label="文章目录" hidden>
+            <a href="#project-overview" class="toc-h3">项目简介</a>
+            <a href="#usage" class="toc-h3">使用方法</a>
+            <a href="#future-plans" class="toc-h3">后续计划</a>
+        </nav>
+    </div>
+    <button class="theme-toggle" id="themeToggle" aria-label="切换主题" title="切换日间/夜间模式">
+        <i class="fas fa-sun"></i><i class="fas fa-moon"></i>
+    </button>
+</header>
+
+<article class="blog-content">
+<h2 id="wildscene">WildScene - 鸟类识别Agent</h2>
+<p><time datetime="2026-11-05">2026年11月5日</time> · Marconi · <span class="blog-status">编写中</span></p>
+<p class="article-badges">
+  <a href="https://developer.mozilla.org/docs/Web/JavaScript"><img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat-square&amp;logo=javascript&amp;logoColor=black" /></a>
+  <a href="https://www.typescriptlang.org/"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&amp;logo=typescript&amp;logoColor=white" /></a>
+  <a href="https://react.dev/"><img alt="React 19" src="https://img.shields.io/badge/React-19-20232A?style=flat-square&amp;logo=react&amp;logoColor=61DAFB" /></a>
+  <a href="https://vite.dev/"><img alt="Vite 7" src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&amp;logo=vite&amp;logoColor=white" /></a>
+  <a href="https://nodejs.org/"><img alt="Node.js 24+" src="https://img.shields.io/badge/Node.js-24%2B-5FA04E?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" /></a>
+</p>
+<p class="article-badges">
+  <a href="https://github.com/Marconik/BirdRecongizer"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-181717?style=flat-square&amp;logo=github&amp;logoColor=white" /></a>
+  <a href="https://github.com/Marconik/BirdRecongizer/releases"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/Marconik/BirdRecongizer?include_prereleases&amp;style=flat-square&amp;label=Release" /></a>
+  <a href="https://github.com/Marconik/BirdRecongizer/blob/HEAD/LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/License-MIT-3D8B5F?style=flat-square" /></a>
+</p>
+<img class="article-image" src="./2026-11-05.assets/overview.png" alt="WildScene 鸟类识别项目封面" width="724" height="543" loading="eager" decoding="async">
+<blockquote>
+<p>作者: Marconi</p>
+<p>感谢ChatGPT的帮助</p>
+</blockquote>
+<h3 id="project-overview">项目简介</h3>
+<p>我经常带着相机到公园或者野外拍摄野生动物，其中主要是各种鸟类。有些鸟类在看到的时候就可以认出来，但有些鸟类当场认不出来，或者存在一些可能的细微差别，需要拍下来之后辨认。</p>
+<p>现有很多鸟类识别工具都是在线单张识别，而且大部分都没法告诉你这些识别模型是如何确认图片中鸟种的。LLM和推理框架使得视觉语言模型VLM变得更加聪明，如果给予视觉语言模型足够好用的工具和充分的信息，效果将大大优于现有的各种鸟类识别引擎。</p>
+<p>本项目实际上是一个本地运行的批量鸟类图片识别WebUI，其核心是一个VLM的Harness。优势包括：</p>
+<ul>
+<li>支持大批量处理，并且可以存储和复用处理结果</li>
+<li>支持各种VLM API，可以选择强大的闭源模型，也可以自己本地运行VLM接入，给予了较高的时间花费、成本花费和安全性的可控性</li>
+<li>加入了多种工具（图片裁切、锐化、曝光调节等）和推理手段，让VLM更准确地识别图片</li>
+<li>支持展示推理过程和重复识别，同时缓存机制使得准确性可以随着使用次数的增加而上升</li>
+</ul>
+<p>目前包含功能：</p>
+<ul>
+<li>导入单独的照片或者照片文件夹，在WebUI内进行预览</li>
+<li>调用VLM API进行鸟类识别</li>
+<li>可以填入拍摄地点、时间、参考列表让识别更加准确</li>
+<li>如果对识别结果有误，可以勾选重新识别并展示推理过程，重新识别可以选择接入另一个VLM的API</li>
+<li>标签保存到照片目录，不会因为清理缓存而被删除，同时支持用户自己编辑标签</li>
+</ul>
+<p><img class="article-image" src="./2026-11-05.assets/workflow.png" alt="WildScene 批量鸟类识别工作流程" width="5856" height="2560" loading="lazy" decoding="async"></p>
+<p>使用两个地点分别50张图片进行测试，接入<code>DeepSeek-V4.1-Flash-1017</code>的官方API，在高峰期运行程序，平均一张照片10s，100张照片一共160次调用花费2.3元</p>
+<img class="article-image" src="./2026-11-05.assets/usage-cost.png" alt="100 张照片识别测试的调用与费用统计" width="950" height="489" loading="lazy" decoding="async">
+<p>在之前使用<code>DeepSeek-V4.1-Flash-1017</code>的测试中，第一轮正确率70%，对不确定的图片再次进行识别之后第二轮正确率达到95%</p>
+<img class="article-image" src="./2026-11-05.assets/first-pass-results.png" alt="首轮鸟类识别测试结果" width="564" height="276" loading="lazy" decoding="async">
+<img class="article-image" src="./2026-11-05.assets/review-results.png" alt="再次识别后的测试结果" width="570" height="272" loading="lazy" decoding="async">
+<blockquote>
+<p>目前仅支持鸟类，首版固定使用 <strong>eBird v2026 官方英文名</strong>，如果识别结果不是鸟类，程序会添加标签<code>Not Bird</code></p>
+<p><strong>目前暂不支持中文名转换</strong>，因为测试数据来自北美，很多鸟类没有准确的中文名</p>
+<p>识别完成的图片支持直接导入项目<a href="https://github.com/Marconik/ImageWall">Marconik/ImageWall: Provide a network frame for online image viewing</a>进行展示</p>
+</blockquote>
+<h3 id="usage">使用方法</h3>
+<blockquote>
+<p>可直接下载 <a href="https://github.com/Marconik/BirdRecongizer/releases">GitHub Release</a> 的预构建附件，按 <a href="https://github.com/Marconik/BirdRecongizer/blob/HEAD/QUICKSTART.md">首次部署指南</a> 安装，<strong>Windows 依次运行 <code>install.cmd</code> 和 <code>start.cmd</code></strong></p>
+<p>以下是对源码版本的构建方式。</p>
+</blockquote>
+<p>需要 Node.js <strong>24 LTS</strong>及支持文件夹读写的桌面 Edge / Chrome</p>
+<pre><code class="language-powershell">npm install
+npm run taxonomy:install
+npm run dev
+</code></pre>
+<p>打开 <code>http://127.0.0.1:5173</code>。程序会同时启动网页前端（5173）与后端（5174），均只监听本机</p>
+<img class="article-image" src="./2026-11-05.assets/workspace.png" alt="WildScene 图片识别工作台" width="1920" height="1032" loading="lazy" decoding="async">
+<ol>
+<li>
+<p>点击工具栏齿轮“模型设置”，填写 API 地址、密钥及视觉模型 ID。可选配置复核模型，并发默认 4，可设1~8</p>
+<img class="article-image" src="./2026-11-05.assets/model-settings.png" alt="模型设置、API 配置和 eBird 分类表" width="429" height="599" loading="lazy" decoding="async">
+</li>
+<li>
+<p>接入API之后，在暂停键右边的统计按钮可以看到模型的用量信息，其中本批次用量是指按下一次开始键直到自动结束这段时间的用量信息</p>
+<img class="article-image" src="./2026-11-05.assets/model-usage.png" alt="API 请求次数、token 与用量统计" width="528" height="608" loading="lazy" decoding="async">
+</li>
+<li>
+<p>在之前的模型窗口，正确载入鸟类命名规则之后应该显示“eBird v2026 · 分类表已就绪”。安装器下载 <a href="https://www.birds.cornell.edu/clementschecklist/download/">Cornell 官方</a>固定版本的 eBird Taxonomy CSV，目前只下载2026年版；下载被拦截时，用浏览器下载官方 <strong>eBird Taxonomy v2026 CSV</strong>，在设置窗口导入；或运行 <code>npm run taxonomy:install -- &quot;C:\path\eBird_Taxonomy_v2026-october-2026.csv&quot;</code>。本地文件名须包含 <code>v2026</code>，校验必需列及至少 10,000 个物种。CSV 没有可靠的内嵌版本声明，须选择正确的官方版本</p>
+</li>
+<li>
+<p>选择图片所在文件夹并允许读写，在“拍摄时间/地点”设置日期与经纬度。如果没有设置日期或者地点，后端程序会<strong>自动调用照片元数据里的拍摄时间和GPS信息</strong>。为保证安全性，程序没有加入获取用户当前定位的功能</p>
+</li>
+<li>
+<p>如果在观鸟的同时已经有记录鸟种，可以把记录到的鸟种直接编辑成.txt文件或者.csv表格，导入到参考列表里，供VLM精确锁定候选物种</p>
+</li>
+<li>
+<p>识别完成的图片会显示标签和推理过程（<strong>推理过程仅保存于浏览器缓存之中</strong>，只能在下一轮推理之前查看），对结果有异议可以勾选重新识别。首个版本下的结果宽松度很低，所以一轮下来会有很大一部分图片被标记为需要重新识别。建议<strong>保留首轮识别勾选的所有需要重新识别的图片，在重新识别之后取消勾选所有仍然标记为需要重新识别的图片</strong></p>
+<img class="article-image" src="./2026-11-05.assets/tagged-files.png" alt="识别完成的照片文件夹" width="1920" height="1032" loading="lazy" decoding="async">
+</li>
+<li>
+<p>识别完成的标签存储为相同文件夹下的<code>tags.json</code>，如果使用我之前构建的<a href="https://github.com/Marconik/ImageWall">ImageWall</a>相册项目，可以直接把整个照片文件夹链接给相册的后端</p>
+<img class="article-image" src="./2026-11-05.assets/imagewall-gallery.png" alt="将识别结果导入 ImageWall 相册展示" width="1757" height="936" loading="lazy" decoding="async">
+</li>
+</ol>
+<h3 id="future-plans">后续计划</h3>
+<p>除了优化现有的一些功能的参数以外，还将实现：</p>
+<ol>
+<li>照片的导出功能，导出包含时间地点元数据、标签水印的照片</li>
+<li>鸟类名字的中文参考</li>
+<li>推理过程的质疑功能：用户可以给被勾选重新识别的照片添加质疑或者引导</li>
+<li>图片参考功能：添加参考图片库，可能会以网络API的形式实现</li>
+<li>VLM模型强化：现有的项目同时可以拿来强化训练VLM模型。预计使用小型蒸馏得到的开源VLM进行训练，训练出来的模型可以作为本地部署该Harness的最佳选项</li>
+</ol>
+</article>
+
+<footer class="blog-footer">
+    <h3 class="footer-title">在其他地方找到我</h3>
+    <div class="social-links">
+        <a href="https://space.bilibili.com/453993985" target="_blank" rel="noopener" class="social-link bilibili">
+            <i class="fab fa-bilibili"></i><span>Bilibili</span>
+        </a>
+        <a href="https://www.xiaohongshu.com/user/profile/616ede5e0000000002023e08" target="_blank" rel="noopener" class="social-link xiaohongshu">
+            <i class="fas fa-book-open"></i><span>小红书</span>
+        </a>
+        <a href="https://www.zhihu.com/people/hao-zi-marconi" target="_blank" rel="noopener" class="social-link zhihu">
+            <i class="fab fa-zhihu"></i><span>知乎</span>
+        </a>
+        <a href="https://github.com/marconik" target="_blank" rel="noopener" class="social-link github">
+            <i class="fab fa-github"></i><span>GitHub</span>
+        </a>
+    </div>
+    <p class="footer-copy">&copy; 2026 Marconi. All rights reserved.</p>
+</footer>
+
+<script>
+(function(){
+    var wrapper=document.querySelector('.toc-wrapper');
+    var toggle=document.getElementById('tocToggle');
+    var toc=document.getElementById('blogToc');
+    function setOpen(open){
+        toc.hidden=!open;
+        toggle.setAttribute('aria-expanded',String(open));
+    }
+    toggle.addEventListener('click',function(){setOpen(toc.hidden);});
+    wrapper.addEventListener('keydown',function(event){
+        if(event.key==='Escape'&&!toc.hidden){
+            event.preventDefault();
+            setOpen(false);
+            toggle.focus();
+        }
+    });
+    wrapper.addEventListener('focusout',function(event){
+        if(!wrapper.contains(event.relatedTarget)) setOpen(false);
+    });
+    document.addEventListener('click',function(event){
+        if(!wrapper.contains(event.target)) setOpen(false);
+    });
+    toc.addEventListener('click',function(event){
+        var link=event.target.closest('a');
+        if(!link) return;
+        setOpen(false);
+        var heading=document.getElementById(decodeURIComponent(link.hash.slice(1)));
+        if(heading){
+            heading.setAttribute('tabindex','-1');
+            heading.focus({preventScroll:true});
+        }
+    });
+})();
+(function(){
+    var html=document.documentElement;
+    var btn=document.getElementById('themeToggle');
+    var saved=localStorage.getItem('blog-theme');
+    if(saved){html.setAttribute('data-theme',saved);}
+    btn.addEventListener('click',function(){
+        var cur=html.getAttribute('data-theme');
+        var next=cur==='dark'?'light':'dark';
+        html.setAttribute('data-theme',next);
+        localStorage.setItem('blog-theme',next);
+    });
+})();
+</script>
+</body>
+</html>

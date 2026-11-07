@@ -1,1 +1,2 @@
 2026-05-13 | Walk on Sphere方法的重要性采样 | 已完成
+2026-11-05 | WildScene - 鸟类识别Agent | 编写中
